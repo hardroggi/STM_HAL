@@ -1,0 +1,126 @@
+IPATH+=${ROOT}/sources
+IPATH+=${ROOT}/sources/config
+IPATH+=${ROOT}/sources/app
+IPATH+=${ROOT}/sources/app/Cryptography
+IPATH+=${ROOT}/sources/os
+IPATH+=${ROOT}/sources/dev
+IPATH+=${ROOT}/sources/interface
+IPATH+=${ROOT}/sources/utility
+IPATH+=${ROOT}/sources/hal
+IPATH+=${RTOS_SOURCE_DIR}/include
+IPATH+=${RTOS_SOURCE_DIR}/portable/GCC/ARM_CM4F
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc/RNG
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc/RNG/DRBG_AES128
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc/AES
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc/AES/CBC
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc/HASH
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc/HASH/SHA256
+IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc/RSA
+IPATH+=${ROOT}/libraries/STM32F30x_StdPeriph_Driver/inc
+IPATH+=${ROOT}/libraries/CMSIS/Include
+IPATH+=${ROOT}/libraries
+IPATH+=${ROOT}/project/config
+
+
+VPATH+=${ROOT}/sources
+VPATH+=${ROOT}/sources/dev
+VPATH+=${ROOT}/sources/os
+VPATH+=${ROOT}/sources/app
+VPATH+=${ROOT}/sources/app/Cryptography
+VPATH+=${ROOT}/sources/interface
+VPATH+=${ROOT}/sources/hal
+VPATH+=${ROOT}/libraries/STM32F30x_StdPeriph_Driver/src
+#VPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/binary/EWARM
+
+####################################DebugInterface############################################
+
+${BINDIR}/DebugInterface_ut.bin: DEFINES+=-DDEBUG
+${BINDIR}/DebugInterface_ut.bin: ${OBJDIR}/DebugInterface_ut.o 
+${BINDIR}/DebugInterface_ut.bin: ${OBJDIR}/DebugInterface.o
+${BINDIR}/DebugInterface_ut.bin: ${OBJDIR}/Mutex.o
+
+####################################BatteryObserver############################################
+
+${BINDIR}/BatteryObserver_ut.bin: DEFINES+=-DUNITTEST 
+${BINDIR}/BatteryObserver_ut.bin: ${OBJDIR}/BatteryObserver_ut.o 
+${BINDIR}/BatteryObserver_ut.bin: ${OBJDIR}/BatteryObserver.o 
+${BINDIR}/BatteryObserver_ut.bin: ${OBJDIR}/DeepSleepInterface.o 
+${BINDIR}/BatteryObserver_ut.bin: ${OBJDIR}/TemperatureSensor.o
+
+####################################TemperatureSensor##########################################
+
+${BINDIR}/TemperatureSensor_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/TemperatureSensor_ut.bin: ${OBJDIR}/TemperatureSensor.o
+${BINDIR}/TemperatureSensor_ut.bin: ${OBJDIR}/TemperatureSensor_NTC.o
+${BINDIR}/TemperatureSensor_ut.bin: ${OBJDIR}/TemperatureSensor_Internal.o
+${BINDIR}/TemperatureSensor_ut.bin: ${OBJDIR}/TemperatureSensor_ut.o
+
+####################################PIDController##############################################
+
+${BINDIR}/PIDController_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/PIDController_ut.bin: ${OBJDIR}/PIDController.o
+${BINDIR}/PIDController_ut.bin: ${OBJDIR}/PIDController_ut.o
+
+####################################Cryptography Random########################################
+
+${BINDIR}/Random_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/Random_ut.bin: ${OBJDIR}/Random.o
+${BINDIR}/Random_ut.bin: ${OBJDIR}/Random_ut.o
+
+####################################Cryptography AES###########################################
+
+${BINDIR}/CryptoAES_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/CryptoAES_ut.bin: ${OBJDIR}/CryptoAES.o
+${BINDIR}/CryptoAES_ut.bin: ${OBJDIR}/CryptoAES_ut.o
+
+####################################Cryptography SHA###########################################
+
+${BINDIR}/CryptoSHA256_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/CryptoSHA256_ut.bin: ${OBJDIR}/CryptoSHA256.o
+${BINDIR}/CryptoSHA256_ut.bin: ${OBJDIR}/CryptoSHA256_ut.o
+
+####################################Cryptography RSA-Sign######################################
+
+${BINDIR}/CryptoRSASignVerify_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/CryptoRSASignVerify_ut.bin: ${OBJDIR}/CryptoRSASignVerify.o
+${BINDIR}/CryptoRSASignVerify_ut.bin: ${OBJDIR}/CryptoRSASignVerify_ut.o
+
+####################################Cryptography RSA Decrypt###################################
+
+${BINDIR}/CryptoRSADecrypt_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/CryptoRSADecrypt_ut.bin: ${OBJDIR}/CryptoRSADecrypt.o
+${BINDIR}/CryptoRSADecrypt_ut.bin: ${OBJDIR}/CryptoRSADecrypt_ut.o
+
+####################################Cryptography RSA Decrypt###################################
+
+${BINDIR}/Cryptography_ut.bin: DEFINES+=-DUNITTEST
+${BINDIR}/Cryptography_ut.bin: ${OBJDIR}/Cryptography.o
+${BINDIR}/Cryptography_ut.bin: ${OBJDIR}/Cryptography_ut.o
+
+
+################################################################################
+
+test: clean-all ${BINDIR} ${OBJDIR} test_binarys
+	@echo "Generate coverage report. See ${COVERAGEDIR}/index.html"
+	-@${LCOV} --directory ${OBJDIR}/ --base-directory ${OBJDIR}/ --gcov-tool ${GCOV} --capture -o ${OBJDIR}/cov.info
+	-@${GENHTML} ${OBJDIR}/cov.info -o ${COVERAGEDIR}
+
+TESTS=${BINDIR}/DebugInterface_ut.bin
+TESTS+=${BINDIR}/BatteryObserver_ut.bin
+TESTS+=${BINDIR}/TemperatureSensor_ut.bin	
+TESTS+=${BINDIR}/PIDController_ut.bin
+TESTS+=${BINDIR}/Random_ut.bin
+TESTS+=${BINDIR}/CryptoAES_ut.bin
+TESTS+=${BINDIR}/CryptoSHA256_ut.bin
+TESTS+=${BINDIR}/CryptoRSASignVerify_ut.bin
+TESTS+=${BINDIR}/CryptoRSADecrypt_ut.bin
+TESTS+=${BINDIR}/Cryptography_ut.bin
+
+
+test_binarys: ${TESTS}  
+	@echo "-------------------------------------------------------------"
+	@echo "-------------------------------------------------------------"
+	@$(foreach test,$^,./$(test);)	
+	@echo "-------------------------------------------------------------"
+	@echo "-------------------------------------------------------------"	
