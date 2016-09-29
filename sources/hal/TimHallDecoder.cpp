@@ -15,10 +15,8 @@
 
 #include <limits>
 #include <algorithm>
-#include <cstring>
 #include <cmath>
 #include "Gpio.h"
-#include "Dma.h"
 #include "TimHallDecoder.h"
 #include "trace.h"
 
@@ -40,28 +38,21 @@ extern "C" void TIM3_IRQHandler(void)
 
 void HallDecoder::interruptHandler(void) const
 {
-    static bool hallEventDetected = false;
-
     if (TIM_GetITStatus(mTim.getBasePointer(), TIM_IT_CC1)) {
         TIM_ClearITPendingBit(mTim.getBasePointer(), TIM_IT_CC1);
+
         const uint32_t eventTimestamp = TIM_GetCapture1(mTim.getBasePointer());
-        if (HallEventCallbacks[mDescription]()) {
-            hallEventDetected = true;
-            // calculate motor speed or else with CCR1 values
-            saveTimestamp(eventTimestamp);
-        } else {
-            TIM_SetCounter(mTim.getBasePointer(), eventTimestamp);
-        }
+        saveTimestamp(eventTimestamp);
+
+        HallEventCallbacks[mDescription]();
     } else if (TIM_GetITStatus(mTim.getBasePointer(), TIM_IT_CC2)) {
         TIM_ClearITPendingBit(mTim.getBasePointer(), TIM_IT_CC2);
-        if (hallEventDetected) {
-            HallDecoder::CommutationCallbacks[mDescription]();
-            hallEventDetected = false;
-        }
+
+        HallDecoder::CommutationCallbacks[mDescription]();
     } else if (TIM_GetITStatus(mTim.getBasePointer(), TIM_IT_CC3)) {
         TIM_ClearITPendingBit(mTim.getBasePointer(), TIM_IT_CC3);
         // no hall interrupt, overflow occurred because of stall motor
-        saveTimestamp(std::numeric_limits<uint32_t>::max());
+        reset();
     } else {
         // this should not happen
     }
@@ -69,19 +60,8 @@ void HallDecoder::interruptHandler(void) const
 
 void HallDecoder::saveTimestamp(const uint32_t timestamp) const
 {
-    if (std::numeric_limits<uint32_t>::max() == timestamp) {
-        mTimestamps.fill(std::numeric_limits<uint32_t>::max());
-    }
-
-    // move all values one step forward in array
-    // to make space for next timestamp
-    mTimestamps[NUMBER_OF_TIMESTAMPS - 1] = timestamp;
-    uint32_t* dataPointer = mTimestamps.data();
-
-    constexpr auto& dma = Factory<hal::Dma>::get<hal::Dma::MEMORY>();
-    dma.memcpy(dataPointer,
-               dataPointer + 1,
-               (HallDecoder::NUMBER_OF_TIMESTAMPS - 1) * sizeof(uint32_t));
+    mTimestamps[mTimestampPosition] = timestamp;
+    mTimestampPosition = (mTimestampPosition + 1) % NUMBER_OF_TIMESTAMPS;
 }
 
 void HallDecoder::incrementCommutationDelay(void) const
@@ -108,25 +88,28 @@ uint32_t HallDecoder::getCommutationDelay(void) const
 
 float HallDecoder::getCurrentRPS(void) const
 {
-    // increment begin iterator to skip first value which is invalid
-    auto begin = mTimestamps.begin();
-    begin++;
+    static constexpr float HALL_EVENTS_PER_ROTATION = 6;
 
-    const uint32_t avgTicksBetweenHallSignals =
-        std::accumulate(
-                        begin,
-                        mTimestamps.end(), 0) / (NUMBER_OF_TIMESTAMPS - 1);
+    uint32_t sumTicksBetweenHallSignals =
+        std::accumulate(mTimestamps.begin(), mTimestamps.end(), 0);
 
-    const float timerFrequency = SYSTEMCLOCK / (mTim.mConfiguration.TIM_Prescaler + 1);
+    const uint32_t avgTicksBetweenHallSignals = sumTicksBetweenHallSignals / NUMBER_OF_TIMESTAMPS; // is wrong
+
+    const float timerFrequency = mTim.getTimerFrequency();
     const float hallSignalFrequency = timerFrequency / avgTicksBetweenHallSignals;
-    const float electricalRotationFrequency = hallSignalFrequency / 6; /* 6 hall events per rotation */
+    const float electricalRotationFrequency = hallSignalFrequency / HALL_EVENTS_PER_ROTATION;
     const float motorRotationFrequency = electricalRotationFrequency / POLE_PAIRS;
-    return motorRotationFrequency * 2; // TODO Find reason why factor 2
+    return motorRotationFrequency;
 }
 
 float HallDecoder::getCurrentOmega(void) const
 {
     return getCurrentRPS() * M_PI * 2;
+}
+
+void HallDecoder::reset(void) const
+{
+    mTimestamps.fill(std::numeric_limits<uint32_t>::max());
 }
 
 uint32_t HallDecoder::getCurrentHallState(void) const
@@ -165,7 +148,7 @@ void HallDecoder::unregisterHallEventCheckCallback(void) const
 
 void HallDecoder::initialize(void) const
 {
-    mTimestamps.fill(std::numeric_limits<uint32_t>::max());
+    reset();
 
     /* T1F_ED will be connected to HallSensor inputs */
     TIM_SelectHallSensor(mTim.getBasePointer(), ENABLE);
@@ -189,8 +172,7 @@ void HallDecoder::initialize(void) const
     TIM_SelectMasterSlaveMode(mTim.getBasePointer(), TIM_MasterSlaveMode_Enable);
 
     /* Channel 2 output compare signal is connected to TRIGO */
-    // Uncomment for automatic trigger of commutation
-    TIM_SelectOutputTrigger(mTim.getBasePointer(), (uint16_t)TIM_TRGO2Source_OC2Ref);
+    TIM_SelectOutputTrigger(mTim.getBasePointer(), (uint16_t)TIM_TRGOSource_OC2Ref);
 
     unregisterHallEventCheckCallback();
     unregisterCommutationCallback();

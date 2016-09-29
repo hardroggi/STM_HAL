@@ -25,7 +25,6 @@
 #include "Gpio.h"
 #include "Tim.h"
 #include "TimHallDecoder.h"
-#include "TimHallMeter.h"
 #include "TimHalfBridge.h"
 #include "TimPwm.h"
 #include "Dma.h"
@@ -51,7 +50,7 @@
 static const int __attribute__((used)) g_DebugZones = ZONE_ERROR | ZONE_WARNING | ZONE_VERBOSE | ZONE_INFO;
 extern char _version_start;
 extern char _version_end;
-const std::string VERSION(&_version_start, ( &_version_end   -   & _version_start));
+const std::string VERSION(&_version_start, (&_version_end - &_version_start));
 
 void initializePowerSupply(void)
 {
@@ -67,7 +66,6 @@ int main(void)
     hal::initFactory<hal::Factory<hal::Gpio> >();
     hal::initFactory<hal::Factory<hal::Tim> >();
     hal::initFactory<hal::Factory<hal::HallDecoder> >();
-    hal::initFactory<hal::Factory<hal::HallMeter> >();
     hal::initFactory<hal::Factory<hal::HalfBridge> >();
     hal::initFactory<hal::Factory<hal::Pwm> >();
     hal::initFactory<hal::Factory<hal::Exti> >();
@@ -77,7 +75,7 @@ int main(void)
     hal::initFactory<hal::Factory<hal::Spi> >();
     hal::initFactory<hal::Factory<hal::SpiWithDma> >();
     hal::initFactory<hal::Factory<hal::Rtc> >();
-//    hal::initFactory<hal::Factory<hal::Adc> >(); Don't USE ADC on STM32F303VC
+    hal::initFactory<hal::Factory<hal::Adc> >();
     hal::initFactory<hal::Factory<hal::Crc> >();
     hal::initFactory<hal::Factory<hal::I2c> >();
 
@@ -87,6 +85,12 @@ int main(void)
     Trace(ZONE_INFO, "Version: %c \r\n", &_version_start);
 
     os::ThisTask::sleep(std::chrono::milliseconds(10));
+
+    dev::Battery* battery = new dev::Battery();
+
+    auto motor = new app::MotorController(
+                                          dev::Factory<dev::SensorBLDC>::get<dev::SensorBLDC::BLDC>(), *battery,
+                                          0.00768, 0.844, 0.8, 0.5);
 
     os::Task::startScheduler();
 

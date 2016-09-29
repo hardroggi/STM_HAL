@@ -31,7 +31,6 @@ static constexpr const std::array<const HalfBridge, HalfBridge::__ENUM__SIZE> Co
 { {
       HalfBridge(HalfBridge::BLDC_PWM,
                  Factory<Tim>::get<Tim::HBRIDGE>(),
-                 TIM_TS_ITR2,
                  TIM_OCInitTypeDef { TIM_OCMode_PWM1, TIM_OutputState_Enable, TIM_OutputNState_Enable, 0,
                                      TIM_OCPolarity_High, TIM_OCNPolarity_High, TIM_OCIdleState_Reset,
                                      TIM_OCNIdleState_Reset},

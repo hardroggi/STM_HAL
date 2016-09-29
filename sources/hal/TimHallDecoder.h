@@ -45,12 +45,7 @@ struct HallDecoder {
     float getCurrentRPS(void) const;
     uint32_t getCurrentHallState(void) const;
     float getCurrentOmega(void) const;
-
-    void registerCommutationCallback(std::function<void(void)> ) const;
-    void unregisterCommutationCallback(void) const;
-
-    void registerHallEventCheckCallback(std::function<bool(void)> ) const;
-    void unregisterHallEventCheckCallback(void) const;
+    void reset(void) const;
 
     const enum Description mDescription;
 
@@ -74,9 +69,16 @@ private:
     void interruptHandler(void) const;
     void saveTimestamp(const uint32_t) const;
 
-    static const size_t NUMBER_OF_TIMESTAMPS = 7;
+    void registerCommutationCallback(std::function<void(void)> ) const;
+    void unregisterCommutationCallback(void) const;
+
+    void registerHallEventCheckCallback(std::function<bool(void)> ) const;
+    void unregisterHallEventCheckCallback(void) const;
+
+    static const size_t NUMBER_OF_TIMESTAMPS = 10;
 
     mutable std::array<uint32_t, NUMBER_OF_TIMESTAMPS> mTimestamps = {};
+    mutable size_t mTimestampPosition = 0;
 
     static std::array<std::function<void(void)>, Description::__ENUM__SIZE> CommutationCallbacks;
     static std::array<std::function<bool(void)>, Description::__ENUM__SIZE> HallEventCallbacks;
