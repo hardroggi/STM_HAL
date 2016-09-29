@@ -8,13 +8,20 @@
 #ifndef SOURCES_APP_CRYPTOGRAPHY_CRYPTOAES_H_
 #define SOURCES_APP_CRYPTOGRAPHY_CRYPTOAES_H_
 
-class Crypto_AES {
+class Crypto_AES
+{
 public:
-	Crypto_AES();
-	virtual ~Crypto_AES();
-	uint8_t Crypto_AES_intialize(uint8_t  *AES128_Key, uint8_t KeySize,  uint8_t  *InitializationVector, uint8_t VectorSize);
-	uint8_t Crypto_AES_decrypt(uint8_t* InputMessage, uint8_t InputMessageLength, uint8_t  *OutputMessage, uint32_t *OutputMessageLength);
-	uint8_t Crypto_AES_close_decryption_process(uint8_t  *OutputMessage, uint32_t *OutputMessageLength);
+    Crypto_AES();
+    virtual ~Crypto_AES();
+    uint8_t Intialize(uint8_t* aesKey,
+                      uint8_t  aesKey_size,
+                      uint8_t* initializationVector,
+                      uint8_t  initializationVector_size);
+    uint8_t Decrypt(uint8_t*  inputMessage,
+                    uint16_t  inputMessage_size,
+                    uint8_t*  outputMessage,
+                    uint16_t* outputMessage_size);
+    uint8_t CloseDecryptionProcess(uint8_t* outputMessage, uint32_t* outputMessage_size);
 };
 
 #endif /* SOURCES_APP_CRYPTOGRAPHY_CRYPTOAES_H_ */

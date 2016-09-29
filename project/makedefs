@@ -31,7 +31,7 @@ AFLAGS=-mthumb \
        -mcpu=cortex-m4  \
        -march=armv7e-m \
        -mfpu=fpv4-sp-d16 \
-       -mfloat-abi=hard \
+       -mfloat-abi=softfp \
        -MD
 
 #-fstack-usage for compile time stack usage estimation
@@ -48,7 +48,7 @@ CFLAGS= -fstack-usage \
         -mcpu=cortex-m4 \
         -march=armv7e-m \
        	-mfpu=fpv4-sp-d16 \
-       	-mfloat-abi=hard \
+       	-mfloat-abi=softfp \
         -fno-builtin \
         -std=c11 \
         -mthumb \
@@ -69,7 +69,7 @@ CPPFLAGS= \
 	    -mcpu=cortex-m4 \
 	    -march=armv7e-m \
 	    -mfpu=fpv4-sp-d16 \
-	    -mfloat-abi=hard \
+	    -mfloat-abi=softfp \
 	    -fno-builtin \
 	    -std=c++14 \
 	    -fno-rtti \
@@ -88,7 +88,7 @@ LDFLAGS= 	-ffunction-sections \
     		-mcpu=cortex-m4 \
     		-march=armv7e-m \
        		-mfpu=fpv4-sp-d16 \
-       		-mfloat-abi=hard \
+       		-mfloat-abi=softfp \
     		-fno-builtin \
     		-std=c++14 \
     		-pedantic \
@@ -186,7 +186,7 @@ ${BINDIR}/%.a:
 	 @echo AR ${@}
 
 ${BINDIR}/%.elf:
-	 @${CPP} -T ${LDSCRIPT} ${LDFLAGS} -o ${@} $(filter %.o %.a, ${?}) 
+	 @${CPP} -T ${LDSCRIPT} ${LDFLAGS} -o ${@} $(filter %.o %.a, ${?}) ../libraries/STM_crypto_Lib_2015/Lib/libSTM32CryptographicV3.0.0_CM4_GCC.a      #../libraries/STM32_Cryptographic_Library/binary/EWARM/M3_CryptoFW_2_0_6.a
 	 @${OBJCOPY} -O binary ${@} ${@:.elf=.bin}
 	 @${OBJCOPY} -O ihex ${@} ${@:.elf=.hex}
 	 @${PREFIX}objdump -D ${@} > ${@:.elf=.lst}

@@ -27,6 +27,8 @@ VPATH+=${RTOS_SOURCE_DIR}/portable/MemMang
 VPATH+=${RTOS_SOURCE_DIR}/portable/GCC/ARM_CM4F
 VPATH+=${ROOT}/libraries/CMSIS/Source
 VPATH+=${ROOT}/libraries/STM32F30x_StdPeriph_Driver/src
+#VPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/binary/EWARM
+VPATH+=${ROOT}/libraries/STM_crypto_Lib_2015/Lib
 VPATH+=${ROOT}/device
 VPATH+=${PRJ_PATH}
 
@@ -46,13 +48,15 @@ IPATH+=${RTOS_SOURCE_DIR}/portable/GCC/ARM_CM4F
 IPATH+=${ROOT}/libraries/CMSIS/Include
 IPATH+=${ROOT}/libraries/STM32F30x_StdPeriph_Driver/inc
 IPATH+=${ROOT}/libraries
+#IPATH+=${ROOT}/libraries/STM32_Cryptographic_Library/inc
+IPATH+=${ROOT}/libraries/STM_crypto_Lib_2015/Inc
 
 # PMD firmware
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/main.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/versionfile.o
 
 # HAL Layer
-#${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Adc.o
+${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Adc.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/CRC.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Dma.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Exti.o
@@ -64,13 +68,12 @@ ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/SpiWithDma.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Tim.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/TimHalfBridge.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/TimHallDecoder.o
-${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/TimHallMeter.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/TimPwm.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Usart.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/UsartWithDma.o
 
 # DEV Layer
-#${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Battery.o
+${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Battery.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/DebugInterface.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Light.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/PIDController.o
@@ -90,8 +93,11 @@ ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/TaskEndless.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/TaskInterruptable.o
 
 # App Layer
-#${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/BatteryObserver.o
-#${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/MotorController.o
+${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/BatteryObserver.o
+${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/MotorController.o
+#${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/Random.o
+${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/CryptoSHA256.o
+${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/CryptoAES.o
 
 #PMD TestApps
 #${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/TestLed.o
@@ -129,4 +135,8 @@ ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/port.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/heap_3.o
 ${BINDIR}/${PRJ_NAME}.elf: ${OBJDIR}/event_groups.o
 
+# Cryptolibrary
+${BINDIR}/${PRJ_NAME}.a: ${OBJDIR}/crypto.o
+#${BINDIR}/${PRJ_NAME}.a: ${OBJDIR}/stm32_crypto_version.o
+${BINDIR}/${PRJ_NAME}.a: ${OBJDIR}/libSTM32CryptographicV3.0.0_CM4_GCC.o
 endif
