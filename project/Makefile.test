@@ -1,6 +1,7 @@
 IPATH+=${ROOT}/sources
 IPATH+=${ROOT}/sources/config
 IPATH+=${ROOT}/sources/app
+IPATH+=${ROOT}/sources/app/Cryptography
 IPATH+=${ROOT}/sources/os
 IPATH+=${ROOT}/sources/dev
 IPATH+=${ROOT}/sources/interface
@@ -23,6 +24,7 @@ VPATH+=${ROOT}/sources
 VPATH+=${ROOT}/sources/dev
 VPATH+=${ROOT}/sources/os
 VPATH+=${ROOT}/sources/app
+VPATH+=${ROOT}/sources/app/Cryptography
 VPATH+=${ROOT}/sources/interface
 VPATH+=${ROOT}/sources/hal
 VPATH+=${ROOT}/libraries/STM32F30x_StdPeriph_Driver/src
